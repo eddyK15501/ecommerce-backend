@@ -14,9 +14,10 @@ router.get("/", async (req, res) => {
         { model: Category, attributes: ["category_name"] },
         {
           model: Tag,
-          attributes: ["tag_name"],
+          attributes: ["id", "tag_name"],
           through: {
-            attributes: [],
+            model: ProductTag,
+            attributes: ["product_id", "tag_id"],
           },
         },
       ],
@@ -43,13 +44,14 @@ router.get("/:id", async (req, res) => {
         { model: Category, attributes: ["category_name"] },
         {
           model: Tag,
-          attributes: ["tag_name"],
+          attributes: ["id", "tag_name"],
           through: {
-            attributes: [],
+            model: ProductTag,
+            attributes: ["product_id", "tag_id"],
           },
         },
       ],
-      where: { id: req.params.id }
+      where: { id: req.params.id },
     });
     if (!productById) {
       res.status(404).json({ message: "No product with this id found." });
@@ -103,6 +105,7 @@ router.put("/:id", (req, res) => {
     },
   })
     .then((product) => {
+      console.log(product);
       if (req.body.tagIds && req.body.tagIds.length) {
         ProductTag.findAll({
           where: { product_id: req.params.id },
@@ -138,8 +141,21 @@ router.put("/:id", (req, res) => {
     });
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   // delete one product by its `id` value
+  try {
+    const deleteProduct = await Product.destroy({
+      where: { id: req.params.id },
+    });
+    if (!deleteProduct) {
+      res.status(404).json({ message: "No product with the id." });
+      return;
+    }
+    res.status(200).json(deleteProduct);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
