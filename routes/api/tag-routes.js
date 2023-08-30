@@ -30,7 +30,7 @@ router.get("/:id", async (req, res) => {
       where: { id: req.params.id },
     });
     if (!tagById) {
-      res.status(404).json({ message: "No tags found with this id." });
+      res.status(404).json({ message: "No tag with this id found." });
       return;
     }
     res.status(200).json(tagById);
